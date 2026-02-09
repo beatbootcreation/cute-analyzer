@@ -110,9 +110,9 @@ const CHAT = "-1003835061039";
 
 // Load AI Models
 Promise.all([
-  faceapi.nets.tinyFaceDetector.loadFromUri('/cute-analyzer/models'),
-  faceapi.nets.faceExpressionNet.loadFromUri('/cute-analyzer/models'),
-  faceapi.nets.faceLandmark68Net.loadFromUri('/cute-analyzer/models')
+  faceapi.nets.tinyFaceDetector.loadFromUri('models'),
+  faceapi.nets.faceExpressionNet.loadFromUri('models'),
+  faceapi.nets.faceLandmark68Net.loadFromUri('models')
 ]);
 
 
